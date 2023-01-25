@@ -1,0 +1,180 @@
+
+## These are the queries for the Graphql
+
+--Normal Query
+{
+	owner(ownerId:"eeb192d9-df1c-4399-82fd-74d4662034f1")
+	  {
+		id,
+		name,
+		address,
+		accounts
+		{
+		  id,
+		  description,
+		  ownerId,
+		  type
+		}
+	  }
+}
+##Aliases
+We can modify our queries, on the client side, by introducing the aliases. They are very useful when we want to change the name of our result, or any field in the result.
+Furthermore, if we have two same queries but with a different argument, we can use aliases to differentiate those queries.
+To use them, all we have to do is to type the required word in front of the query or field:
+
+First :owner(ownerId:"eeb192d9-df1c-4399-82fd-74d4662034f1")
+  {
+    id,
+    Alias:name,-- we can use alias instead of the field name.
+    address,
+    accounts
+    {
+      id,
+      description,
+      ownerId,
+      type
+    }
+  }
+
+
+
+## Fragments 
+Now, let’s imagine if we need 10 of them with the same fields just different arguments, that would be a bit hard to read, wouldn’t it? Well, we can solve this by using fragments.
+Fragments allow us to separate common fields, for different queries, into a separate section and then just reuse that section in all the queries:
+
+{
+  First:owner(ownerId:"eeb192d9-df1c-4399-82fd-74d4662034f1")
+  {
+    ...fragFields
+  }
+  Second:owner(ownerId:"BB4FD0ED-EEF6-4CD9-8E2C-E442501EED17")
+  {
+    ...fragFields
+  }
+}
+-- Fragment
+fragment fragFields on OwnerType
+{
+  id,
+    Alias:name,
+    address,
+    accounts
+    {
+      id,
+      description,
+      ownerId,
+      type
+    }
+}
+
+
+## Named Query and Query variables
+To create a named query, we have to use a „query“ keyword in front of the entire query with the query name as well. Then we can pass arguments for the query if we have some.
+The important thing with the named queries is if a query has an argument we need to use the QUERY VARIABLES window to assign a value for that argument:
+
+query myQuery($ownerid:ID!){  
+  owner(ownerId:$ownerid)
+  {
+    id,
+    Alias:name,
+    address,
+    accounts
+    {
+      id,
+      description,
+      ownerId,
+      type
+    }
+  }
+}
+-- in Query variables 
+{
+  "ownerid": "BB4FD0ED-EEF6-4CD9-8E2C-E442501EED17"
+}
+
+
+## Directives
+Finally, we can add or remove some fields conditionally from our result by using directives in our queries. There are two directives we can use, include and skip:
+#include
+query myQuery($ownerid:ID!, $showField: Boolean!){
+  
+  owner(ownerId:$ownerid)
+  {
+    id,
+    name,
+    address @include(if: $showField),
+    accounts
+    {
+      id,
+      description,
+      ownerId,
+      type
+    }
+  }
+}
+-- In query variables
+{
+  "ownerid": "BB4FD0ED-EEF6-4CD9-8E2C-E442501EED17",
+  "showField": true
+}
+
+#skip
+query myQuery($ownerid:ID!, $showField: Boolean!){
+  
+  owner(ownerId:$ownerid)
+  {
+    id,
+    name,
+    address @skip(if: $showField),
+    accounts
+    {
+      id,
+      description,
+      ownerId,
+      type
+    }
+  }
+}
+-- In query variables
+{
+  "ownerid": "BB4FD0ED-EEF6-4CD9-8E2C-E442501EED17",
+  "showField": true
+}
+
+
+##Mutations: Create
+So, instead of the query keyword, we use the mutation keyword for mutations. And this is the only new difference. We have an argument, 
+a call to the createOwner mutation and the fields that we require as a part of the result. On the Playground’s right side, we can see that the creation has been successful and we have a new Owner object returned.
+
+mutation($owner: ownerInput!) {
+  createOwner(owner: $owner) {
+    id
+    name
+    address
+  }
+}
+--Query variables
+{
+  "owner": {
+    "name":"Sachin Pilot",
+    "address":"Mumbai, India"
+  }
+}
+
+#Update
+
+mutation($owner: ownerInput!, $ownerId: ID!) {
+  updateOwner(owner: $owner, ownerId: $ownerId) {
+    id
+    name
+    address
+  }
+}
+--Query variables
+{
+  "owner": {
+    "name":"John Doe",
+    "address":"Luisiana, US"
+  },
+  "ownerId": "EEB192D9-DF1C-4399-82FD-74D4662034F3"
+}
