@@ -1,0 +1,3 @@
+is_global = true
+build_property.RootNamespace = GraphQL.API.Client
+build_property.ProjectDir = D:\POCs\GraphQL.API.Client\
